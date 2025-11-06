@@ -1,0 +1,481 @@
+{
+  "info": {
+    "name": "SlotSwapper MERN API",
+    "_postman_id": "e3f3b2dc-9b8f-4d2e-bc2d-1234567890ab",
+    "description": "Postman collection for SlotSwapper API (auth, events, swap logic). Uses {{base_url}} and {{TOKEN}} variables.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000/api",
+      "type": "string"
+    },
+    {
+      "key": "TOKEN",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "A_EVENT_ID",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "B_EVENT_ID",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "SWAP_REQUEST_ID",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Signup",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/signup",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "signup"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Alice\",\n  \"email\": \"alice@test.com\",\n  \"password\": \"123456\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"alice@test.com\",\n  \"password\": \"123456\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Save token to collection variable TOKEN",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch(e) {}",
+                  "if (json && json.token) {",
+                  "  pm.collectionVariables.set('TOKEN', json.token);",
+                  "  pm.test('Saved TOKEN', function(){ pm.expect(pm.collectionVariables.get('TOKEN')).to.be.a('string'); });",
+                  "} else {",
+                  "  pm.test('Token not found in response', function(){ pm.expect(false).to.be.true; });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Events",
+      "item": [
+        {
+          "name": "Get My Events",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "events"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Event (A)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{TOKEN}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "events"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Team Meeting\",\n  \"startTime\": \"2025-11-10T10:00:00.000Z\",\n  \"endTime\": \"2025-11-10T11:00:00.000Z\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Optionally store created event id as A_EVENT_ID",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch(e) {}",
+                  "if (json && json._id) { pm.collectionVariables.set('A_EVENT_ID', json._id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Make A Event Swappable",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{TOKEN}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/events/{{A_EVENT_ID}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "events",
+                "{{A_EVENT_ID}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"SWAPPABLE\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Event (by id)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/events/{{A_EVENT_ID}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "events",
+                "{{A_EVENT_ID}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Swaps",
+      "item": [
+        {
+          "name": "Get Others' Swappable Slots",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/swappable-slots",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "swappable-slots"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Event (B user - login with B first)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{TOKEN}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "events"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Focus Block\",\n  \"startTime\": \"2025-11-11T14:00:00.000Z\",\n  \"endTime\": \"2025-11-11T15:00:00.000Z\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Optionally store created event id as B_EVENT_ID",
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch(e) {}",
+                  "if (json && json._id) { pm.collectionVariables.set('B_EVENT_ID', json._id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Make B Event Swappable",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{TOKEN}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/events/{{B_EVENT_ID}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "events",
+                "{{B_EVENT_ID}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"SWAPPABLE\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Request Swap (my A \u2194 their B)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{TOKEN}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/swap-request",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "swap-request"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mySlotId\": \"{{A_EVENT_ID}}\",\n  \"theirSlotId\": \"{{B_EVENT_ID}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch(e) {}",
+                  "if (json && json._id) { pm.collectionVariables.set('SWAP_REQUEST_ID', json._id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Incoming Requests (as responder)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/requests/incoming",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "requests",
+                "incoming"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Outgoing Requests (as requester)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/requests/outgoing",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "requests",
+                "outgoing"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Respond to Swap (ACCEPT)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{TOKEN}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/swap-response/{{SWAP_REQUEST_ID}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "swap-response",
+                "{{SWAP_REQUEST_ID}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"accept\": true}"
+            }
+          }
+        },
+        {
+          "name": "Respond to Swap (REJECT)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{TOKEN}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/swap-response/{{SWAP_REQUEST_ID}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "swap-response",
+                "{{SWAP_REQUEST_ID}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"accept\": false}"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
